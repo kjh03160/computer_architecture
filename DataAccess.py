@@ -12,7 +12,7 @@ class DataAccess:
         address -= 0x1000000
         self.Simulator.DataMEM[address] = value
 
-    def MEM_LoadByte(self, address):    # sign extend 가 되어야하는데...
+    def MEM_LoadByte(self, address):
         address -= 0x1000000
         return self.Simulator.DataMEM[address] & 0xFF
 
