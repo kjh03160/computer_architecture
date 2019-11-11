@@ -54,9 +54,6 @@ class ALU:
             y = y << v
             ret = y
         elif c == 2:
-            y = y >> v
-            ret = y
-        elif c == 3:
             msb = y
             msb = msb >> 31
             if msb == 1:
@@ -68,6 +65,10 @@ class ALU:
                 y = y >> v
                 ret = y
                 return ret
+        elif c == 3:
+            y = y >> v
+            ret = y
+
         return ret
 
     @staticmethod
