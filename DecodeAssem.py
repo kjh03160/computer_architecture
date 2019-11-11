@@ -118,7 +118,8 @@ class DecodeAssem:
 
             elif instruction['func'] == 'lbu':  # 부호비트 상관 없이 가져와야댐
                 MEM_address = ALU.ALU_main(self.Simulator.Regis[destination], offset << 2, 0b1000)
-                pass
+                self.Simulator.Regis[destination] = self.Simulator.DataAccess.MEM_LoadByteU(MEM_address)
+
 
             elif instruction['func'] == 'sb':
                 MEM_address = ALU.ALU_main(self.Simulator.Regis[destination], offset << 2, 0b1000)
