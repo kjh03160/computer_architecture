@@ -17,8 +17,8 @@ class DecodeAssem:
 
         if instruction['func'] in DecodeAssem.R_type:
             x = instruction['rs']
-            y = instruction['rd']
-            destination = instruction['rt']
+            y = instruction['rt']
+            destination = instruction['rd']
 
             if instruction['shamt'] != 0:       # 시프트 연산
                 if instruction['func'] == 'sll':
