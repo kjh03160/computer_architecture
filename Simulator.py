@@ -2,9 +2,9 @@ from ALU import ALU
 from DataAccess import DataAccess
 from DecodeAssem import DecodeAssem
 from DecodeBinary import DecodeBinary
+import struct
 
-
-class Simulator(DecodeBinary, DecodeAssem, DataAccess):
+class Simulator(DecodeAssem, DecodeBinary, DataAccess):
     def __init__(self, inst = 1000, data = 1000):
         self.InsMEM = [None for i in range(inst)]   # 주소 : 0x400000
         self.DataMEM = [None for i in range(data)]  # 주소 : 0x1000000
@@ -19,21 +19,38 @@ class Simulator(DecodeBinary, DecodeAssem, DataAccess):
         #                   '$gp': 0, '$sp': 0, '$s8': 0, '$ra': 0}
         self.Regis = [0 for i in range(32)]
         self.PC = 0
-        self.Index = (self.PC - 0x400000) // 4
-        self.DecodeBinary = DecodeBinary(self)
         self.DecodeAssem = DecodeAssem(self)
+        self.DecodeBinary = DecodeBinary(self)
         self.DataAccess = DataAccess(self)
 
     @classmethod
     def loadProgram(cls, file_name):
-        cls.PC = 0x400000
-        # 파일 fetch, self.InsMEM에 명령어 담기
-        # inst 개수랑 data 개수
-        return cls(inst, data)
+        with open(file_name, 'rb') as file:
+            inst = struct.pack('4B', file.read(1)[0], file.read(1)[0], file.read(1)[0], file.read(1)[0])
+            data = struct.pack('4B', file.read(1)[0], file.read(1)[0], file.read(1)[0], file.read(1)[0])
+            inst = struct.unpack('>I', inst)[0]
+            data = struct.unpack('>I', data)[0]
+
+            simul = cls(inst, data)
+
+            for i in range(inst):
+                bin = struct.pack('4B', file.read(1)[0], file.read(1)[0], file.read(1)[0], file.read(1)[0])
+                bin = struct.unpack('>I', bin)[0]
+                simul.InsMEM[i] = bin
+
+            for i in range(data):
+                value = struct.pack('4B', file.read(1)[0], file.read(1)[0], file.read(1)[0], file.read(1)[0])
+                value = struct.unpack('>I', value)[0]
+                simul.DataMEM[i] = value
+                # print(simul.DataMEM)
+
+        simul.PC = 0x400000
+        return simul
 
 
     def step(self):
-        self.DecodeBinary.decode_step(1)
+        Index = (self.PC - 0x400000) // 4
+        self.DecodeBinary.decode_step(Index)
 
     def go(self):
         self.DecodeBinary.decode_All(self.InsMEM)
@@ -50,8 +67,11 @@ class Simulator(DecodeBinary, DecodeAssem, DataAccess):
 
 import sys
 s = Simulator()
+# while True:
+    # a =' input().split()
 while True:
-    a = input().split()
+    b = [input()]
+    a = b + [r'C:\Users\kis03\Desktop\자료\전공\2학년 2학기\컴퓨터구조\과제\machine_example\as_ex01_arith.bin']
     if a[0] == "l":
         s = s.loadProgram(a[1])
     elif a[0] == "s":
