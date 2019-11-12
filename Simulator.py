@@ -7,16 +7,8 @@ import struct
 class Simulator(DecodeAssem, DecodeBinary, DataAccess):
     def __init__(self, inst = 1000, data = 1000):
         self.InsMEM = [None for i in range(inst)]   # 주소 : 0x400000
-        self.DataMEM = [None for i in range(data)]  # 주소 : 0x1000000
+        self.DataMEM = [None for i in range(data)]  # 주소 : 0x10000000
         # self.StackMEM = []
-        # self.Regis = {'$0': 0, '$at': 0, '$v0': 0, '$v1': 0,
-        #                   '$a0': 0, '$a1': 0, '$a2': 0, '$a3': 0,
-        #                   '$t0': 0, '$t1': 0, '$t2': 0, '$t3': 0,
-        #                   '$t4': 0, '$t5': 0, '$t6': 0, '$t7': 0,
-        #                   '$s0': 0, '$s1': 0, '$s2': 0, '$s3': 0,
-        #                   '$s4': 0, '$s5': 0, '$s6': 0, '$s7': 0,
-        #                   '$t8': 0, '$t9': 0, '$k0': 0, '$k1': 0,
-        #                   '$gp': 0, '$sp': 0, '$s8': 0, '$ra': 0}
         self.Regis = [0 for i in range(32)]
         self.PC = 0
         self.DecodeAssem = DecodeAssem(self)
@@ -42,7 +34,6 @@ class Simulator(DecodeAssem, DecodeBinary, DataAccess):
                 value = struct.pack('4B', file.read(1)[0], file.read(1)[0], file.read(1)[0], file.read(1)[0])
                 value = struct.unpack('>I', value)[0]
                 simul.DataMEM[i] = value
-                # print(simul.DataMEM)
 
         simul.PC = 0x400000
         return simul
@@ -56,19 +47,29 @@ class Simulator(DecodeAssem, DecodeBinary, DataAccess):
         self.DecodeBinary.decode_All(self.InsMEM)
 
     def jump(self, address):
-        pass
+        self.PC = address
 
     def printMEM(self):
-        pass
+        for i in range(len(self.DataMEM)):
+            print(self.DataMEM[i])
+        print()
 
     def printRg(self):
-        pass
+        rg_name = ['$0', '$at', '$v0', '$v1', '$a0', '$a1', '$a2', '$a3', '$t0', '$t1', '$t2', '$t3', '$t4',
+              '$t5', '$t6', '$t7', '$s0', '$s1', '$s2', '$s3', '$s4', '$s5', '$s6', '$s7', '$t8', '$t9',
+              '$k0', '$k1', '$gp', '$sp', '$s8', '$ra']
+        print_rg = {}
+        for i in range(32):
+            print_rg[rg_name[i]] = self.Regis[i]
+
+        for rg, val in print_rg.items():
+            print(rg, hex(val))
+        print()
 
 
 import sys
 s = Simulator()
-# while True:
-    # a =' input().split()
+
 while True:
     b = [input()]
     a = b + [r'C:\Users\kis03\Desktop\자료\전공\2학년 2학기\컴퓨터구조\과제\machine_example\as_ex01_arith.bin']
