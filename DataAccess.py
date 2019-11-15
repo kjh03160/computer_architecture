@@ -5,14 +5,16 @@ class DataAccess:
         self.Simulator = Simulator
 
     def MEM_LoadWord(self, address):
-        address -= 0x10000000
-        return self.Simulator.DataMEM[address]
+        if (address & 0xFFF00000) == 0x7FF00000:
+            address -= 0x7ffff52c
+            index = address // 4
+            return self.Simulator.StackMEM[index]
 
-    def MEM_StoreWord(self, value, address):
         address -= 0x10000000
-        self.Simulator.DataMEM[address] = value
+        return self.Simulator.DataMEM[address] & 0xFFFFFFFF
 
     def MEM_LoadByte(self, address):
+
         address -= 0x10000000
         return self.Simulator.DataMEM[address] & 0xFF
 
@@ -24,4 +26,13 @@ class DataAccess:
     def MEM_StoreByte(self, value, address):
         address -= 0x10000000
         self.Simulator.DataMEM[address] = value & 0xFF
+
+    def MEM_StoreWord(self, value, address):
+        if (address & 0xFFF00000) == 0x7FF00000:
+            address -= 0x7ffff52c
+            index = address // 4
+            self.Simulator.StackMEM[index] = value & 0xFFFFFFFF
+            return
+        address -= 0x10000000
+        self.Simulator.DataMEM[address] = value & 0xFFFFFFFF
 
