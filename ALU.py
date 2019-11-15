@@ -1,5 +1,3 @@
-
-
 class ALU:
     Z = 0
 
@@ -22,7 +20,7 @@ class ALU:
         elif c32 == 3:
             ret = ALU.logicOperation(x, y, c10)
 
-        return ret
+        return ret & 0xFFFFFFFF
 
     @staticmethod
     def EndFunc():
@@ -53,23 +51,23 @@ class ALU:
         elif c == 1:
             y = y << v
             ret = y
-        elif c == 2:
+        elif c == 3:
             msb = y
             msb = msb >> 31
             if msb == 1:
                 y = y >> v
                 y = y | (0xFFFFFFFF << (32 - v))
                 ret = y
-                return ret
+                return ret & 0xFFFFFFFF
             if msb == 0:
                 y = y >> v
                 ret = y
-                return ret
-        elif c == 3:
+                return ret & 0xFFFFFFFF
+        elif c == 2:
             y = y >> v
             ret = y
 
-        return ret
+        return ret & 0xFFFFFFFF
 
     @staticmethod
     def addSubstract(x, y, c10):
@@ -82,10 +80,11 @@ class ALU:
         elif c10 == 0x1 or c10 == 0x3:
             ret = x - y
 
-        return ret
+        return ret & 0xFFFFFFFF
 
     @staticmethod
     def checkZero(s):
+
         if s == 0:
             return 1
         else:
