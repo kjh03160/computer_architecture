@@ -8,7 +8,7 @@ class DataAccess:
         if (address & 0xFFF00000) == 0x7FF00000:
             address -= 0x7ffff52c
             index = address // 4
-            return self.Simulator.StackMEM[index]
+            return self.Simulator.StackMEM.pop()
 
         address -= 0x10000000
         return self.Simulator.DataMEM[address] & 0xFFFFFFFF
@@ -31,7 +31,10 @@ class DataAccess:
         if (address & 0xFFF00000) == 0x7FF00000:
             address -= 0x7ffff52c
             index = address // 4
-            self.Simulator.StackMEM[index] = value & 0xFFFFFFFF
+            try:
+                self.Simulator.StackMEM[index] = value & 0xFFFFFFFF
+            except:
+                self.Simulator.StackMEM.append(value & 0xFFFFFFFF)
             return
         address -= 0x10000000
         self.Simulator.DataMEM[address] = value & 0xFFFFFFFF
