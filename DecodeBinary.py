@@ -1,98 +1,66 @@
-class ALU:
-    Z = 0
+from ALU import ALU
+import ctypes
+import struct
 
-    @staticmethod
-    def ALU_main(x, y, c):
-        ret = None
-        c32 = (c >> 2) & 0x3
-        c10 = c & 0x3
-        if c32 == 0:
-            ret = ALU.shiftOperation(x, y, c10)
 
-        elif c32 == 1:
-            ret = ALU.checkSetless(x, y)
+class DecodeBinary:
+    Opcode_list = [
+    ["R-format", "bltz", "j", "jal", "beq", "bne", "", ""],
+    ["addi", "addiu", "slti", "", "andi", "ori", "xori", "lui"],
+    ["", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", ""],
+    ["lb", "", "", "lw", "lbu", "", "", ""],
+    ["sb", "", "", "sw", "", "", "", ""]]
 
-        elif c32 == 2:
-            ret = ALU.addSubstract(x, y, c10)
-            S = ret
-            ALU.Z = ALU.checkZero(S)
+    Funct_list = [
+    ["sll", "", "srl", "sra", "", "", "", ""],
+    ["jr", "", "", "", "syscall", "", "", ""],
+    ["mfhi", "", "mflo", "", "", "", "", ""],
+    ["mul", "", "", "", "", "", "", ""],
+    ["add", "addu", "sub", "", "and", "or", "xor", "nor"],
+    ["", "", "", "slt", "", "", "", ""]
+    ]
 
-        elif c32 == 3:
-            ret = ALU.logicOperation(x, y, c10)
+    def __init__(self, Simulator):
+        self.Simulator = Simulator
 
-        return ret & 0xFFFFFFFF
-
-    @staticmethod
-    def EndFunc():
-        print("None")
-
-    @staticmethod
-    def logicOperation(x, y, c10):
-        if c10 < 0 or c10 > 3:
-            ALU.EndFunc()
-
-        if c10 == 0:
-            return x & y
-        elif c10 == 1:
-            return x | y
-        elif c10 == 2:
-            return x ^ y
-        elif c10 == 3:
-            return ~(x | y)
-
-    @staticmethod
-    def shiftOperation(v, y, c):
-        ret = None
-        v = v & 0x001F # 5bit
-        if c < 0 or c > 3:
-            ALU.EndFunc()
-        if c == 0:
-            ret = y
-        elif c == 1:
-            y = y << v
-            ret = y
-        elif c == 3:
-            msb = y
-            msb = msb >> 31
-            if msb == 1:
-                y = y >> v
-                y = y | (0xFFFFFFFF << (32 - v))
-                ret = y
-                return ret & 0xFFFFFFFF
-            if msb == 0:
-                y = y >> v
-                ret = y
-                return ret & 0xFFFFFFFF
-        elif c == 2:
-            y = y >> v
-            ret = y
-
-        return ret & 0xFFFFFFFF
-
-    @staticmethod
-    def addSubstract(x, y, c10):
-        ret = None
-        if c10 < 0x0 or c10 > 0x3:
-            print("error")
-            ALU.EndFunc()
-        elif c10 == 0x0 or c10 == 0x2:
-            ret = x + y
-        elif c10 == 0x1 or c10 == 0x3:
-            ret = x - y
-
-        return ret & 0xFFFFFFFF
-
-    @staticmethod
-    def checkZero(s):
-
-        if s == 0:
-            return 1
+    def decode_step(self, index):
+        self.Simulator.PC = ALU.addSubstract(self.Simulator.PC, 4, 0)
+        inst = self.Simulator.InsMEM[index]
+        if inst == 0:
+            result = {'func' : 'nop'}
         else:
-            return 0
+            opCode = inst >> 26
+            opCode_front = opCode >> 3
+            opCode_back = opCode & 7
+            if opCode == 0:
+                funct = inst & 63
+                funct_front = funct >> 3
+                funct_back = funct & 7
+                func = self.Funct_list[funct_front][funct_back]
+                rs = (inst >> 21) & 31
+                rt = (inst >> 16) & 31
+                rd = (inst >> 11) & 31
+                sh = (inst >> 6) & 31
+                result = {'func': func, 'rs' : rs, 'rt' : rt, 'rd' : rd, 'shamt' : sh}
 
-    @staticmethod
-    def checkSetless(x, y):
-        if x < y:
-            return 1
-        else:
-            return 0
+
+            else:
+                func = self.Opcode_list[opCode_front][opCode_back]
+
+                if 'j' in func:
+                    j_add = (inst << 6) >> 6 & 0x3FFFFFF
+                    result = {'func' : func, 'j_add' : j_add}
+                else:
+                    offset = inst & 0xFFFF
+                    if func[-1] == 'i':
+                        temp = struct.pack('>i', inst)
+                        offset = struct.unpack('>1h1h', temp)[1]
+                    rs = (inst >> 21) & 31
+                    rt = (inst >> 16) & 31
+                    result = {'func' : func, 'rs' : rs, 'rt' : rt, 'offset' : offset}
+
+
+            self.Simulator.DecodeAssem.decode(result)
+        print(result)
+        return self.Simulator.PC
