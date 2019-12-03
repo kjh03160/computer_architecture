@@ -8,10 +8,11 @@ class DataAccess:
         if (address & 0xFFF00000) == 0x7FF00000:
             address -= 0x7ffff52c
             index = address // 4
-            return self.Simulator.StackMEM.pop()
+            return self.Simulator.StackMEM[index]
 
         address -= 0x10000000
-        return self.Simulator.DataMEM[address] & 0xFFFFFFFF
+
+        return self.Simulator.DataMEM[address]
 
     def MEM_LoadByte(self, address):
 
@@ -32,10 +33,9 @@ class DataAccess:
             address -= 0x7ffff52c
             index = address // 4
             try:
-                self.Simulator.StackMEM[index] = value & 0xFFFFFFFF
+                self.Simulator.StackMEM[index] = value
             except:
-                self.Simulator.StackMEM.append(value & 0xFFFFFFFF)
+                self.Simulator.StackMEM.append(value)
             return
         address -= 0x10000000
-        self.Simulator.DataMEM[address] = value & 0xFFFFFFFF
-
+        self.Simulator.DataMEM[address] = value
