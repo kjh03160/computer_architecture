@@ -104,7 +104,7 @@ while True:
         s.printRg()
 
     elif a[0] == "j":
-        s.jump(int(a[1]))
+        s.jump(int(a[1], 0))
     elif a[0] == "m":
         s.printMEM()
     elif a[0] == "r":
